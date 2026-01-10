@@ -1,11 +1,11 @@
 import { ThemeProvider } from "./theme/theme-provider";
 
-function Context({ children }: { children: React.ReactNode }) {
+function Provider({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
+      enableSystem
       attribute="class"
       defaultTheme="system"
-      enableSystem
       disableTransitionOnChange
     >
       {children}
@@ -13,4 +13,4 @@ function Context({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default Context;
+export default Provider;
