@@ -1,12 +1,16 @@
-import { ModeToggle } from "@/components/theme/toggleButton";
+"use client";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export default function Home() {
+  const [count, setCount] = useState(0);
+
   return (
-    <div>
-      <h1>Hello</h1>
-      <Button className="bg-primary">Click me</Button>
-      <ModeToggle />
-    </div>
+    <>
+      <p>Count: {count}</p>
+      <Button className="bg-primary" onClick={() => setCount(count + 1)}>
+        Click me
+      </Button>
+    </>
   );
 }
