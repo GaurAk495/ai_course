@@ -3,7 +3,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 
-const clerk_webhook_secret = process.env.CLERK_WEBHOOK_SECRET!
+const clerk_webhook_secret = process.env.CLERK_WEBHOOK_SECRET!;
 
 if (!clerk_webhook_secret) {
   throw new Error("Missing CLERK_WEBHOOK_SECRET");
@@ -29,18 +29,23 @@ export async function POST(req: Request) {
 
   const { type, data } = evt as any;
 
-  switch (type) {
-    case "user.created":
-      await handleUserCreated(data);
-      break;
+  try {
+    switch (type) {
+      case "user.created":
+        await handleUserCreated(data);
+        break;
 
-    case "user.updated":
-      await handleUserUpdated(data);
-      break;
+      case "user.updated":
+        await handleUserUpdated(data);
+        break;
 
-    case "user.deleted":
-      await handleUserDeleted(data);
-      break;
+      case "user.deleted":
+        await handleUserDeleted(data);
+        break;
+    }
+  } catch (error) {
+    console.error(`Error handling ${type} event:`, error);
+    return new Response("Internal server error", { status: 500 });
   }
 
   return new Response("OK");
@@ -56,7 +61,6 @@ async function handleUserCreated(data: any) {
     },
   });
 }
-
 
 async function handleUserUpdated(data: any) {
   await prisma.user.update({
