@@ -1,17 +1,16 @@
-import { User } from "@/prisma_client/client";
 import { createContext, useContext } from "react";
+import { useUser } from "@clerk/clerk-react";
 
-type ContextType = {
-    user: User | null;
-    isPending: boolean;
+type UserContextType = {
+  user: ReturnType<typeof useUser>["user"];
+  isLoaded: boolean;
+  isSignedIn: boolean | undefined;
 };
 
-export const UserContext = createContext<ContextType | null>(null);
+export const UserContext = createContext<UserContextType | null>(null);
 
-export const useUser = () => {
-    const context = useContext(UserContext);
-    if (!context) {
-        throw new Error("useUser must be used within a UserContextProvider");
-    }
-    return context;
-};
+export function useAppUser() {
+  const ctx = useContext(UserContext);
+  if (!ctx) throw new Error("useAppUser must be used inside UserProvider");
+  return ctx;
+}
