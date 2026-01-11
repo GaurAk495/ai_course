@@ -34,18 +34,14 @@ export async function POST(req: NextRequest) {
 
     /* ---------------- AI Generation ---------------- */
 
-    const tools = [
-      {
-        googleSearch: {},
-      },
-    ];
     const model = "gemini-2.5-flash";
     const config = {
       thinkingConfig:
         model !== "gemini-2.5-flash"
           ? { thinkingLevel: ThinkingLevel.MEDIUM }
           : { thinkingBudget: 8082 },
-      tools,
+      responseMimeType: "application/json",
+      responseJsonSchema: CourseConfigSchema.toJSONSchema(),
       systemInstruction: [
         {
           text: Course_config_prompt,
