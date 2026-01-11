@@ -10,14 +10,14 @@ Each chapter should be suitable for 1–3 short animated slides.
 
 COURSE CONFIG STRUCTURE REQUIREMENTS:
 Top-level fields:
-courseId (short, slug-like string)
+courseSlug (short, slug-like string)
 courseName
 courseDescription (2–3 lines, simple & engaging)
 level (Beginner | Intermediate | Advanced)
 totalChapters (number)
 chapters (array) (Max 3);
 Each chapter object must contain:
-chapterId (slug-style, unique)
+chapterSlug (slug-style, unique)
 chapterTitle
 subContent (array of strings, max 3 items)
 
