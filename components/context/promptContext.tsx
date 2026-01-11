@@ -51,9 +51,7 @@ export const PromptContextProvider = ({
 export const usePrompt = () => {
   const context = useContext(PromptContext);
   if (!context) {
-    throw new Error(
-      "usePromptContext must be used within a PromptContextProvider"
-    );
+    throw new Error("usePrompt must be used within a PromptContextProvider");
   }
   return context;
 };
