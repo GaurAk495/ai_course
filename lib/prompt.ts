@@ -34,4 +34,4 @@ Avoid marketing fluff
 USER INPUT:
 User will provide course topic
 OUTPUT:
-Return ONLY the JSON object.`
+Return ONLY the JSON object.`;

@@ -4,6 +4,9 @@ import { Course_config_prompt } from "@/lib/prompt";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { CourseConfigSchema } from "./schemaType";
+import { getErrorMessage } from "@/lib/utils";
+import { ThinkingLevel } from "@google/genai";
 
 type courseBody = {
   userInput: string;
@@ -30,17 +33,49 @@ export async function POST(req: NextRequest) {
     }
 
     /* ---------------- AI Generation ---------------- */
-    const aiResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: userInput,
-      config: {
-        systemInstruction: Course_config_prompt,
-        responseMimeType: "application/json",
-        responseJsonSchema: CourseConfigSchema.toJSONSchema(),
-      },
-    });
 
+    const tools = [
+      {
+        googleSearch: {},
+      },
+    ];
+    const model = "gemini-2.5-flash";
+    const config = {
+      thinkingConfig:
+        model !== "gemini-2.5-flash"
+          ? { thinkingLevel: ThinkingLevel.MEDIUM }
+          : { thinkingBudget: 8082 },
+      tools,
+      systemInstruction: [
+        {
+          text: Course_config_prompt,
+        },
+      ],
+    };
+
+    const contents = [
+      {
+        role: "user",
+        parts: [
+          {
+            text: "The Course is about: " + userInput,
+          },
+        ],
+      },
+    ];
+
+    let aiResponse;
+    try {
+      aiResponse = await ai.models.generateContent({ model, contents, config });
+    } catch (error) {
+      console.error("AI generation error:", error);
+      return NextResponse.json(
+        { message: "AI generation failed" },
+        { status: 502 }
+      );
+    }
     const rawText = aiResponse.text;
+
     if (!rawText) {
       return NextResponse.json(
         { message: "AI returned empty response" },
@@ -53,7 +88,7 @@ export async function POST(req: NextRequest) {
     try {
       courseJson = JSON.parse(rawText);
     } catch (err) {
-      console.error("AI JSON parse error:", rawText);
+      console.error("AI JSON parse error:", err);
       return NextResponse.json(
         { message: "Invalid JSON returned by AI" },
         { status: 502 }
@@ -116,87 +151,9 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /course error:", error);
     return NextResponse.json(
-      { error: getErrorMessage(error) },
+      { error: getErrorMessage({ error, method: "POST", path: "/course" }) },
       { status: 500 }
     );
   }
 }
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return "Something went wrong";
-}
-
-const CourseConfigSchema = z
-  .object({
-    courseSlug: z
-      .string()
-      .regex(/^[a-z0-9-]+$/)
-      .describe(
-        "A short, slug-style unique identifier for the course. Use lowercase letters, numbers, and hyphens only."
-      ),
-
-    courseName: z
-      .string()
-      .min(1)
-      .describe("The human-readable title of the course."),
-
-    courseDescription: z
-      .string()
-      .min(20)
-      .max(300)
-      .describe(
-        "A simple and engaging 2–3 line description explaining what the course teaches."
-      ),
-
-    level: z
-      .enum(["Beginner", "Intermediate", "Advanced"])
-      .describe("The difficulty level of the course."),
-
-    totalChapters: z
-      .number()
-      .int()
-      .min(1)
-      .max(3)
-      .describe(
-        "The total number of chapters in the course. Must match the length of the chapters array."
-      ),
-
-    chapters: z
-      .array(
-        z.object({
-          chapterSlug: z
-            .string()
-            .regex(/^[a-z0-9-]+$/)
-            .describe("A slug-style unique identifier for the chapter."),
-
-          chapterTitle: z.string().min(1).describe("The title of the chapter."),
-
-          subContent: z
-            .array(
-              z
-                .string()
-                .describe(
-                  "A short, slide-friendly learning point suitable for narration."
-                )
-            )
-            .min(1)
-            .max(3)
-            .describe(
-              "Key learning points for the chapter. Maximum of 3 items."
-            ),
-        })
-      )
-      .min(1)
-      .max(3)
-      .describe("An ordered list of chapters. Maximum of 3 chapters."),
-  })
-  .refine((data) => data.totalChapters === data.chapters.length, {
-    message:
-      "totalChapters must exactly match the number of chapters provided.",
-    path: ["totalChapters"],
-  });

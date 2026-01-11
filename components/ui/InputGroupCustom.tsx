@@ -26,12 +26,12 @@ export function InputGroupCustom() {
   const { openSignIn } = useClerk();
 
   const generateCourse = async () => {
+    if (!isSignedIn) {
+      openSignIn();
+      return;
+    }
     const toastId = toast.loading("Generating course...");
     try {
-      if (!isSignedIn) {
-        openSignIn();
-        return;
-      }
       setLoading(true);
       const response = await axios.post("/api/course", {
         userInput: text,
@@ -62,7 +62,7 @@ export function InputGroupCustom() {
         onChange={(e) => setInput(e.target.value)}
       />
       <InputGroupAddon align="block-end">
-        {/* <SelectType /> */}
+        <SelectType />
         <InputGroupButton
           className="ml-auto cursor-pointer disabled:cursor-not-allowed"
           size="sm"
