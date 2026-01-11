@@ -8,6 +8,7 @@ export function QuickVideoSuggestion() {
       {QUICK_VIDEO_SUGGESTIONS.map((suggestion) => (
         <button
           key={suggestion.id}
+          type="button"
           className="bg-card p-3 rounded-md shadow-sm cursor-pointer"
           onClick={() => setInput(suggestion.prompt)}
         >

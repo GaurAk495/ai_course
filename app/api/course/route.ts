@@ -62,18 +62,18 @@ export async function POST(req: NextRequest) {
 
     const parsed = CourseConfigSchema.safeParse(courseJson);
     if (!parsed.success) {
-      console.error("Schema validation error:", parsed.error.format());
+      console.error("Schema validation error:", z.treeifyError(parsed.error));
       return NextResponse.json(
         {
           message: "AI response does not match expected schema",
-          errors: parsed.error.format(),
+          errors: z.treeifyError(parsed.error),
         },
         { status: 422 }
       );
     }
 
     const {
-      courseId,
+      courseSlug,
       courseName,
       courseDescription,
       level,
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     const result = await prisma.$transaction(async (tx) => {
       const course = await tx.course.create({
         data: {
-          courseId,
+          courseSlug,
           courseName,
           courseDescription,
           level,
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
 
       await tx.chapter.createMany({
         data: chapters.map((chapter) => ({
-          chapterId: chapter.chapterId,
+          chapterSlug: chapter.chapterSlug,
           chapterTitle: chapter.chapterTitle,
           subContent: chapter.subContent,
           courseId: course.id,
@@ -133,7 +133,7 @@ function getErrorMessage(error: unknown) {
 
 const CourseConfigSchema = z
   .object({
-    courseId: z
+    courseSlug: z
       .string()
       .regex(/^[a-z0-9-]+$/)
       .describe(
@@ -169,7 +169,7 @@ const CourseConfigSchema = z
     chapters: z
       .array(
         z.object({
-          chapterId: z
+          chapterSlug: z
             .string()
             .regex(/^[a-z0-9-]+$/)
             .describe("A slug-style unique identifier for the chapter."),
