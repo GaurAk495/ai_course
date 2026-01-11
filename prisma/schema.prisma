@@ -15,4 +15,41 @@ model User {
   avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  courses   Course[]
+}
+
+enum Level {
+  Beginner
+  Intermediate
+  Advanced
+}
+
+model Course {
+  id                String @id @default(uuid())
+  courseId          String @unique
+  courseName        String
+  courseDescription String
+  level             Level
+  totalChapters     Int
+  //relations
+  userId            String
+  user              User   @relation(fields: [userId], references: [clerkId])
+
+  chapters  Chapter[]
+  //timestamps recording
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Chapter {
+  id           String   @id @default(uuid())
+  chapterId    String   @unique
+  chapterTitle String
+  subContent   String[]
+  //relations
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id])
+  //timestamps recording
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

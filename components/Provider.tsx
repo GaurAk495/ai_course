@@ -1,4 +1,7 @@
+import { ClerkThemeProvider } from "./ClerkProvider";
+import { PromptContextProvider } from "./context/promptContext";
 import { ThemeProvider } from "./theme/theme-provider";
+import { Toaster } from "./ui/sonner";
 
 function Provider({ children }: { children: React.ReactNode }) {
   return (
@@ -8,7 +11,10 @@ function Provider({ children }: { children: React.ReactNode }) {
       defaultTheme="system"
       disableTransitionOnChange
     >
-      {children}
+      <ClerkThemeProvider>
+        <PromptContextProvider>{children}</PromptContextProvider>
+      </ClerkThemeProvider>
+      <Toaster position="top-right" richColors />
     </ThemeProvider>
   );
 }
