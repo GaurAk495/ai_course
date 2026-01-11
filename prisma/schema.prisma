@@ -13,6 +13,43 @@ model User {
   email     String   @unique
   name      String?
   avatar    String?
+  courses   Course[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum Level {
+  Beginner
+  Intermediate
+  Advanced
+}
+
+model Course {
+  id                String @id @default(uuid())
+  courseSlug        String @unique
+  courseName        String
+  courseDescription String
+  level             Level
+  totalChapters     Int
+  //relations 
+  userId            String
+  user              User   @relation(fields: [userId], references: [clerkId])
+
+  chapters  Chapter[]
+  //timestamps recording
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Chapter {
+  id           String   @id @default(uuid())
+  chapterSlug  String   @unique
+  chapterTitle String
+  subContent   String[]
+  //relations
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id])
+  //timestamps recording
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

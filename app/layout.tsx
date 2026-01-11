@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
-import Context from "../components/Provider";
-import { ClerkProvider } from "@clerk/nextjs";
-import { NavBar } from "@/components/NavBar";
+import Provider from "../components/Provider";
+import NavBar from "@/components/NavBar";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -26,17 +25,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${dmSans.variable} ${dmMono.variable} antialiased`}>
-          <Context>
-            <NavBar />
-            <div className="pt-12">
-              {children}
-            </div>
-          </Context>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${dmSans.variable} ${dmMono.variable} antialiased`}>
+        <Provider>
+          <NavBar />
+          <div className="pt-12">{children}</div>
+        </Provider>
+      </body>
+    </html>
   );
 }

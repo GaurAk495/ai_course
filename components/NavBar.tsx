@@ -1,10 +1,9 @@
 "use client";
-
 import {
   SignInButton,
   SignOutButton,
-  UserButton,
   useUser,
+  UserButton,
 } from "@clerk/nextjs";
 
 import { ModeToggle } from "./theme/toggleButton";
@@ -19,7 +18,7 @@ const menuItems = [
   { label: "Settings", href: "/settings" },
 ];
 
-export function NavBar() {
+export default function NavBar() {
   const { isSignedIn } = useUser();
   const pathname = usePathname();
   return (
