@@ -1,8 +1,10 @@
+"use client";
 import { BookOpen, ChartNoAxesColumnIncreasingIcon, Stars } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getCourse } from "./action";
-
+import { Player } from "@remotion/player";
+import VideoPreview from "./VideoPreview";
+// import { Skeleton } from "@/components/ui/skeleton";
 type CourseType = Awaited<ReturnType<typeof getCourse>>["course"];
 
 function CoursePage({ course }: { course: CourseType }) {
@@ -20,7 +22,7 @@ function CoursePage({ course }: { course: CourseType }) {
 function CourseHero({ course }: { course: NonNullable<CourseType> }) {
   return (
     <div className="px-4 mt-4 ">
-      <div className="max-w-7xl mx-auto px-4 py-12 md:p-12 rounded-lg bg-linear-to-br from-primary/8 via-blue-600/8 to-green-500/8 ">
+      <div className="max-w-7xl flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between md:gap-4 mx-auto px-4 py-12 md:p-12 rounded-lg bg-linear-to-br from-primary/8 via-blue-600/8 to-green-500/8 ">
         <div className="max-w-2xl flex flex-col items-center sm:items-start ">
           <span className="text-sm w-fit flex items-center gap-1 px-2 py-1 rounded-full border border-white/25 mb-4 backdrop-blur-md bg-primary/20 dark:bg-accent inset-shadow-md inset-shadow-black/50 ">
             <Stars size={12} /> Course Preview
@@ -45,6 +47,21 @@ function CourseHero({ course }: { course: NonNullable<CourseType> }) {
               {course.chapters.length} Chapters
             </div>
           </div>
+        </div>
+        <div className="max-w-xl w-full aspect-video">
+          <Player
+            component={VideoPreview}
+            durationInFrames={120}
+            fps={30}
+            compositionWidth={1280}
+            compositionHeight={720}
+            controls={true}
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: ".6rem",
+            }}
+          />
         </div>
       </div>
     </div>
@@ -85,7 +102,21 @@ function CoursePreview({ course }: { course: NonNullable<CourseType> }) {
                   </div>
                 </div>
               </div>
-              <Skeleton className="w-68 h-44" />
+              <div className="w-full md:w-96 aspect-video">
+                <Player
+                  component={VideoPreview}
+                  durationInFrames={120}
+                  fps={30}
+                  compositionWidth={1280}
+                  compositionHeight={720}
+                  controls={true}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: ".6rem",
+                  }}
+                />
+              </div>
             </div>
           ))}
         </div>
