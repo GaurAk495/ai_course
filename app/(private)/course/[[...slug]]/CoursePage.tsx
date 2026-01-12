@@ -1,7 +1,7 @@
 import { BookOpen, ChartNoAxesColumnIncreasingIcon, Stars } from "lucide-react";
-import { getCourse } from "./action";
 import { notFound } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getCourse } from "./action";
 
 type CourseType = Awaited<ReturnType<typeof getCourse>>["course"];
 

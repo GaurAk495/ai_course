@@ -28,9 +28,9 @@ export function getErrorMessage({
   action,
 }: GetErrorMessageProps) {
   if (method) {
-    console.error(`${method} ${path} error:`, error);
+    console.error(`${method} ${path}`, error);
   } else {
-    console.error(`${action} error:`, error);
+    console.error(`${action}:`, error);
   }
   if (error instanceof Error) {
     return error.message;
