@@ -12,7 +12,7 @@ export default function Home() {
 function Hero() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-2  relative">
-      <div className="pt-24 text-center">
+      <div className="pt-10 md:pt-24 text-center">
         <h1 className="text-3xl font-bold md:text-5xl mb-4">
           Learn Smarter with{" "}
           <span className="text-primary">Ai Video Courses</span>
