@@ -1,12 +1,10 @@
-import { ai } from "@/lib/ai";
 import prisma from "@/lib/prisma";
-import { Course_config_prompt } from "@/lib/prompt";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { CourseConfigSchema } from "./schemaType";
 import { getErrorMessage } from "@/lib/utils";
-import { ThinkingLevel } from "@google/genai";
+import { aiCourseGenerate } from "@/lib/pol-ai";
+import { CourseConfigSchema, courseSchema } from "@/lib/prompt";
 
 type courseBody = {
   userInput: string;
@@ -33,36 +31,9 @@ export async function POST(req: NextRequest) {
     }
 
     /* ---------------- AI Generation ---------------- */
-
-    const model = "gemini-2.5-flash";
-    const config = {
-      thinkingConfig:
-        model !== "gemini-2.5-flash"
-          ? { thinkingLevel: ThinkingLevel.MEDIUM }
-          : { thinkingBudget: 8082 },
-      responseMimeType: "application/json",
-      responseJsonSchema: CourseConfigSchema.toJSONSchema(),
-      systemInstruction: [
-        {
-          text: Course_config_prompt,
-        },
-      ],
-    };
-
-    const contents = [
-      {
-        role: "user",
-        parts: [
-          {
-            text: "The Course is about: " + userInput,
-          },
-        ],
-      },
-    ];
-
     let aiResponse;
     try {
-      aiResponse = await ai.models.generateContent({ model, contents, config });
+      aiResponse = await aiCourseGenerate(userInput);
     } catch (error) {
       console.error("AI generation error:", error);
       return NextResponse.json(
@@ -70,9 +41,8 @@ export async function POST(req: NextRequest) {
         { status: 502 }
       );
     }
-    const rawText = aiResponse.text;
 
-    if (!rawText) {
+    if (!aiResponse) {
       return NextResponse.json(
         { message: "AI returned empty response" },
         { status: 502 }
@@ -82,7 +52,7 @@ export async function POST(req: NextRequest) {
     /* ---------------- Parse & Validate ---------------- */
     let courseJson: unknown;
     try {
-      courseJson = JSON.parse(rawText);
+      courseJson = JSON.parse(aiResponse);
     } catch (err) {
       console.error("AI JSON parse error:", err);
       return NextResponse.json(
