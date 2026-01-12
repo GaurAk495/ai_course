@@ -19,12 +19,20 @@ import axios from "axios";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { usePrompt } from "../context/promptContext";
+import { useRouter } from "next/navigation";
+import { courseSchema } from "@/lib/prompt";
+
+type ApiCourseResponse = {
+  message: string;
+  courseId: string;
+  course: courseSchema;
+};
 
 export function InputGroupCustom() {
   const { text, setInput, setLoading, loading, type } = usePrompt();
   const { isSignedIn } = useUser();
   const { openSignIn } = useClerk();
-
+  const router = useRouter();
   const generateCourse = async () => {
     if (!isSignedIn) {
       openSignIn();
@@ -33,12 +41,13 @@ export function InputGroupCustom() {
     const toastId = toast.loading("Generating course...");
     try {
       setLoading(true);
-      const response = await axios.post("/api/course", {
+      const response = await axios.post<ApiCourseResponse>("/api/course", {
         userInput: text,
         type,
       });
-      console.log(response.data);
       toast.success("Course generated successfully", { id: toastId });
+      const { course, courseId } = response.data;
+      router.push(`/course/${course.courseSlug}/${courseId}`);
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
