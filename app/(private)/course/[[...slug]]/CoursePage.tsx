@@ -1,5 +1,5 @@
 import { BookOpen, ChartNoAxesColumnIncreasingIcon, Stars } from "lucide-react";
-import { getCourse } from "./action";
+import { getCourse } from "../../[[...slug]]/action";
 import { notFound } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
