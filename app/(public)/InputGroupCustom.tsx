@@ -50,12 +50,16 @@ export function InputGroupCustom() {
       toast.success("Course generated successfully", { id: toastId });
       const courseData = response.data;
       router.push(`/course/${courseData.courseSlug}/${courseData.courseId}`);
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        "Something went wrong";
+    } catch (error: unknown) {
+      let message = "Something went wrong";
+      if (axios.isAxiosError(error)) {
+        message =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
 
       toast.error(message, { id: toastId });
     } finally {
@@ -92,10 +96,7 @@ function SelectType() {
   const { type, setType } = usePrompt();
   return (
     <Select value={type} onValueChange={setType} defaultValue="full-course">
-      <SelectTrigger
-        className="w-[200px] rounded-full"
-        suppressHydrationWarning
-      >
+      <SelectTrigger className="w-50px rounded-full" suppressHydrationWarning>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
