@@ -9,10 +9,10 @@ export function QuickVideoSuggestion() {
         <button
           key={suggestion.id}
           type="button"
-          className="bg-card p-3 rounded-md shadow-sm cursor-pointer"
+          className="bg-card px-3 py-1 rounded-md shadow-sm cursor-pointer"
           onClick={() => setInput(suggestion.prompt)}
         >
-          <span className="text-sm font-semibold">{suggestion.title}</span>
+          <span className="text-[12px] font-semibold">{suggestion.title}</span>
         </button>
       ))}
     </div>
