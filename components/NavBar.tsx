@@ -42,8 +42,10 @@ export default function NavBar() {
                   <X />
                 </button>
               )}
-              <Image src="/logo.png" alt="Logo" width={32} height={32} />
-              <span>AI Course</span>
+              <Link href="/" className="flex items-center space-x-2">
+                <Image src="/logo.png" alt="Logo" width={32} height={32} />
+                <span className="text-lg font-bold">AI Course</span>
+              </Link>
             </div>
             <div className="hidden md:flex space-x-2">
               <MenuItems closeMobileMenu={closeMobileMenu} />

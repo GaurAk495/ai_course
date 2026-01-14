@@ -13,7 +13,6 @@ async function page({ params }: { params: Promise<{ slug?: string[] }> }) {
   if (error || !course) {
     return notFound();
   }
-
   return <CoursePage course={course} />;
 }
 

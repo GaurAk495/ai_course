@@ -3,8 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getErrorMessage } from "@/lib/utils";
-import { aiCourseGenerate } from "@/lib/pol-ai";
-import { CourseConfigSchema, courseSchema } from "@/lib/prompt";
+import { aiCourseGenerate } from "@/app/api/course/action";
+import { CourseConfigSchema } from "@/app/api/course/courseGeneratePrompt";
 
 type courseBody = {
   userInput: string;
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     /* ---------------- Body ---------------- */
-    const body = (await req.json()) as Partial<courseBody>;
+    const body = (await req.json()) as courseBody;
     const userInput = body.userInput?.trim();
 
     if (!userInput) {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     } catch (error) {
       console.error("AI generation error:", error);
       return NextResponse.json(
-        { message: "AI generation failed" },
+        { message: "AI Course generation failed" },
         { status: 502 }
       );
     }

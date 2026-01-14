@@ -49,7 +49,31 @@ model Chapter {
   //relations
   courseId     String
   course       Course   @relation(fields: [courseId], references: [id])
+
+  chapterSlides ChapterSlides[]
   //timestamps recording
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ChapterSlides {
+  id String @id @default(uuid())
+
+  slideSlug     String @unique
+  slideIndex    Int
+  title         String
+  subtitle      String
+  html          String
+  revelData     Json
+  narration     Json
+  audioFileName String
+  audioUrl      String
+  captions      Json
+
+  //relations
+  chapterId String
+  chapter   Chapter @relation(fields: [chapterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
