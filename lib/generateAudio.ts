@@ -31,11 +31,13 @@ export interface TextToSpeechResult {
   success: boolean;
   url: string;
   captions: MurfResponse["wordDurations"];
+  audioLengthInSeconds: number;
 }
 
 const R2_BUCKET = process.env.R2_BUCKET;
-if (!R2_BUCKET) {
-  throw new Error("R2_BUCKET not found");
+const MURF_API_KEY = process.env.MURF_API_KEY;
+if (!R2_BUCKET || !MURF_API_KEY) {
+  throw new Error("R2_BUCKET or MURF_API_KEY not found");
 }
 
 export async function textToSpeech(
@@ -57,12 +59,13 @@ export async function textToSpeech(
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "api-key": process.env.MURF_API_KEY!,
+          "api-key": MURF_API_KEY,
         },
       }
     );
     const keyName = `tts/${key}`;
     const audioUrl = response.data.audioFile;
+    const audioLengthInSeconds = response.data.audioLengthInSeconds;
     const audioRes = await axios.get(audioUrl, {
       responseType: "arraybuffer",
     });
@@ -79,6 +82,7 @@ export async function textToSpeech(
       success: true,
       url: `${R2_PUBLIC_URL}/${keyName}`,
       captions: response.data.wordDurations,
+      audioLengthInSeconds,
     };
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {

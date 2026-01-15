@@ -29,7 +29,7 @@ export default function RootLayout({
       <body className={`${dmSans.variable} ${dmMono.variable} antialiased`}>
         <Provider>
           <NavBar />
-          <div className="pt-13">{children}</div>
+          <div className="pt-13 flex flex-col min-h-screen">{children}</div>
         </Provider>
       </body>
     </html>

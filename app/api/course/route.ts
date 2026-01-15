@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
           chapterTitle: chapter.chapterTitle,
           subContent: chapter.subContent,
           courseId: course.id,
+          status: "Pending",
         })),
       });
 

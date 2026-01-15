@@ -7,12 +7,12 @@ async function page({ params }: { params: Promise<{ slug?: string[] }> }) {
   if (!slug || slug.length !== 2) {
     return notFound();
   }
-
-  const [_, courseId] = slug;
+  const [, courseId] = slug;
   const { course, error } = await getCourse(courseId);
   if (error || !course) {
     return notFound();
   }
+
   return <CoursePage course={course} />;
 }
 

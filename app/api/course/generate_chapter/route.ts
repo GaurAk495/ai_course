@@ -1,12 +1,10 @@
 import { getErrorMessage } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-import { aiChapterSlidesGenerate, dummySlidesData, getChapter } from "./action";
-import z from "zod";
+import { aiChapterSlidesGenerate } from "./action";
 import { ChapterSlideConfig } from "./chapterSlideGeneratePrompt";
-import { textToSpeech } from "@/lib/generateAudio";
+import { textToSpeech, TextToSpeechResult } from "@/lib/generateAudio";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 
 type ChapterBody = {
   chapterId: string;
@@ -15,26 +13,35 @@ type ChapterBody = {
 };
 
 export async function POST(req: NextRequest) {
+  const body = (await req.json()) as Partial<ChapterBody>;
+  const { chapterId, courseId, courseSlug } = body;
+
+  if (!chapterId || !courseId || !courseSlug) {
+    return NextResponse.json(
+      { message: "ChapterId not given" },
+      { status: 400 }
+    );
+  }
+
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const body = (await req.json()) as Partial<ChapterBody>;
-    const { chapterId, courseId, courseSlug } = body;
-    if (!chapterId || !courseId || !courseSlug) {
-      return NextResponse.json(
-        { message: "ChapterId not given" },
-        { status: 400 }
-      );
-    }
-    const chapter = await getChapter(chapterId);
+
+    /* ---------------- Fetch & Lock Chapter (race-safe) ---------------- */
+    const chapter = await prisma.chapter.findUnique({
+      where: { id: chapterId },
+      include: { chapterSlides: true },
+    });
+
     if (!chapter) {
       return NextResponse.json(
         { message: "Chapter with this id not found." },
         { status: 400 }
       );
     }
+
     if (chapter.chapterSlides.length > 0) {
       return NextResponse.json(
         { message: "Chapter already has slides." },
@@ -42,83 +49,92 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 🔧 FIX 1: status update isolated & quick
+    await prisma.chapter.update({
+      where: {
+        id: chapterId,
+        status: "Pending",
+      },
+      data: { status: "InProgress" },
+    });
+
     /* ---------------- Slide Content Generation ---------------- */
-    let aiResponse;
+    let aiResponse: string;
     try {
       aiResponse = await aiChapterSlidesGenerate(chapter);
     } catch (error) {
-      console.error("AI generation error:", error);
-      return NextResponse.json(
-        { message: "AI Chapter Slides generation failed" },
-        { status: 502 }
-      );
+      throw new Error("AI_GENERATION_FAILED");
     }
+
     if (!aiResponse) {
-      return NextResponse.json(
-        { message: "AI returned empty response" },
-        { status: 502 }
-      );
+      throw new Error("AI_EMPTY_RESPONSE");
     }
+
     /* ---------------- Parse & Validate ---------------- */
     let chapterSlidesJson: unknown;
     try {
       chapterSlidesJson = JSON.parse(aiResponse);
-    } catch (err) {
-      console.error("AI JSON parse error:", err);
-      return NextResponse.json(
-        { message: "Invalid JSON returned by AI" },
-        { status: 502 }
-      );
+    } catch {
+      throw new Error("AI_INVALID_JSON");
     }
-    /* ---------------- Validate ---------------- */
+
     const parsed = ChapterSlideConfig.safeParse(chapterSlidesJson);
     if (!parsed.success) {
-      console.error("Schema validation error:", z.treeifyError(parsed.error));
-      return NextResponse.json(
-        {
-          message: "AI response does not match expected schema",
-          errors: z.treeifyError(parsed.error),
-        },
-        { status: 422 }
-      );
+      throw new Error("AI_SCHEMA_INVALID");
     }
+
     const chapterSlides = parsed.data;
-    console.log("chapterSlides", chapterSlides);
-    // const chapterSlides = dummySlidesData;
-    /* ---------------- Generating Audio ---------------- */
-    const audioPromises = chapterSlides.map((slide) => {
-      return textToSpeech({
+
+    /* ---------------- Generating Audio (NO prisma here) ---------------- */
+    const audioFiles: TextToSpeechResult[] = [];
+    for (const slide of chapterSlides) {
+      const audioFile = await textToSpeech({
         text: slide.narration.fullText,
         key: slide.audioFileName,
       });
-    });
-    const audioFiles = await Promise.all(audioPromises);
-    // const audioFiles = dummyTexttoSpeech;
-    console.log("audioFiles", audioFiles);
+      audioFiles.push(audioFile);
+    }
 
-    /* ---------------- Saving to Database ---------------- */
+    /* ---------------- Saving to Database (atomic) ---------------- */
+    await prisma.$transaction(async (tx) => {
+      await tx.chapterSlides.createMany({
+        data: chapterSlides.map((slide, i) => ({
+          slideSlug: slide.slideSlug,
+          slideIndex: slide.slideIndex,
+          title: slide.title,
+          subtitle: slide.subtitle,
+          html: slide.html,
+          revelData: slide.revelData,
+          narration: slide.narration,
+          audioFileName: slide.audioFileName,
+          audioLengthInSeconds: audioFiles[i].audioLengthInSeconds,
+          audioUrl: audioFiles[i].url,
+          captions: audioFiles[i].captions,
+          chapterId,
+        })),
+      });
 
-    await prisma.chapterSlides.createMany({
-      data: chapterSlides.map((slide, i) => ({
-        slideSlug: slide.slideSlug,
-        slideIndex: slide.slideIndex,
-        title: slide.title,
-        subtitle: slide.subtitle,
-        html: slide.html,
-        revelData: slide.revelData,
-        narration: slide.narration,
-        audioFileName: slide.audioFileName,
-        audioUrl: audioFiles[i].url,
-        captions: audioFiles[i].captions,
-        chapterId: chapterId,
-      })),
+      await tx.chapter.update({
+        where: { id: chapterId },
+        data: { status: "Generated" },
+      });
     });
-    revalidatePath(`/course/${courseSlug}/${courseId}`);
+
     return NextResponse.json(
       { success: true, audioFiles, chapterSlides },
       { status: 201 }
     );
   } catch (error) {
+    // 🔧 FIX 2: safe error update (never throw inside catch)
+    try {
+      await prisma.chapter.update({
+        where: { id: chapterId },
+        data: { status: "Error" },
+      });
+    } catch {
+      // swallow db error to avoid masking original issue
+    }
+
     return NextResponse.json(
       {
         error: getErrorMessage({
@@ -131,48 +147,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-const dummyTexttoSpeech = [
-  {
-    success: true,
-    url: "https://store.flowton.online/tts/getting-started-with-chatgpt-01.mp3",
-    wordDurations: [
-      {
-        endMs: 1,
-        startMs: 1,
-        word: "string",
-        pitchScaleMaximum: 1.1,
-        pitchScaleMinimum: 1.1,
-        sourceWordIndex: 1,
-      },
-    ],
-  },
-  {
-    success: true,
-    url: "https://store.flowton.online/tts/getting-started-with-chatgpt-02.mp3",
-    wordDurations: [
-      {
-        endMs: 1,
-        startMs: 1,
-        word: "string",
-        pitchScaleMaximum: 1.1,
-        pitchScaleMinimum: 1.1,
-        sourceWordIndex: 1,
-      },
-    ],
-  },
-  {
-    success: true,
-    url: "https://store.flowton.online/tts/getting-started-with-chatgpt-03.mp3",
-    wordDurations: [
-      {
-        endMs: 1,
-        startMs: 1,
-        word: "string",
-        pitchScaleMaximum: 1.1,
-        pitchScaleMinimum: 1.1,
-        sourceWordIndex: 1,
-      },
-    ],
-  },
-];

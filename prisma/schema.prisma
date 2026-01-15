@@ -24,6 +24,13 @@ enum Level {
   Advanced
 }
 
+enum Status {
+  Pending
+  InProgress
+  Error
+  Generated
+}
+
 model Course {
   id                String @id @default(uuid())
   courseSlug        String @unique
@@ -31,7 +38,7 @@ model Course {
   courseDescription String
   level             Level
   totalChapters     Int
-  //relations 
+  //relations
   userId            String
   user              User   @relation(fields: [userId], references: [clerkId])
 
@@ -42,14 +49,14 @@ model Course {
 }
 
 model Chapter {
-  id           String   @id @default(uuid())
-  chapterSlug  String   @unique
-  chapterTitle String
-  subContent   String[]
+  id            String          @id @default(uuid())
+  chapterSlug   String          @unique
+  chapterTitle  String
+  subContent    String[]
   //relations
-  courseId     String
-  course       Course   @relation(fields: [courseId], references: [id])
-
+  courseId      String
+  course        Course          @relation(fields: [courseId], references: [id])
+  status        Status          @default(Pending)
   chapterSlides ChapterSlides[]
   //timestamps recording
   createdAt     DateTime        @default(now())
@@ -59,16 +66,17 @@ model Chapter {
 model ChapterSlides {
   id String @id @default(uuid())
 
-  slideSlug     String @unique
-  slideIndex    Int
-  title         String
-  subtitle      String
-  html          String
-  revelData     Json
-  narration     Json
-  audioFileName String
-  audioUrl      String
-  captions      Json
+  slideSlug            String @unique
+  slideIndex           Int
+  title                String
+  subtitle             String
+  html                 String
+  revelData            Json
+  narration            Json
+  audioFileName        String
+  audioLengthInSeconds Int
+  audioUrl             String
+  captions             Json
 
   //relations
   chapterId String

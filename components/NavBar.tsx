@@ -11,7 +11,7 @@ import { Button } from "./ui/button";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const menuItems = [
@@ -21,7 +21,6 @@ const menuItems = [
 ];
 
 export default function NavBar() {
-  const { isSignedIn } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
   return (
@@ -52,18 +51,7 @@ export default function NavBar() {
             </div>
             <div className="space-x-2 flex items-center ">
               <ModeToggle />
-              {isSignedIn ? (
-                <>
-                  <UserButton />
-                  <SignOutButton>
-                    <Button variant="ghost">Sign Out</Button>
-                  </SignOutButton>
-                </>
-              ) : (
-                <SignInButton mode="modal">
-                  <Button variant="secondary">Get Started</Button>
-                </SignInButton>
-              )}
+              <AuthMenu />
             </div>
           </div>
         </div>
@@ -74,6 +62,34 @@ export default function NavBar() {
           </div>
         )}
       </div>
+    </>
+  );
+}
+
+function AuthMenu() {
+  const { isSignedIn } = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  return (
+    <>
+      {isSignedIn ? (
+        <>
+          <UserButton />
+          <SignOutButton>
+            <Button variant="ghost">Sign Out</Button>
+          </SignOutButton>
+        </>
+      ) : (
+        <SignInButton mode="modal">
+          <Button variant="secondary">Get Started</Button>
+        </SignInButton>
+      )}
     </>
   );
 }
