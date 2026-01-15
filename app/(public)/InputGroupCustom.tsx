@@ -20,7 +20,7 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { usePrompt } from "../../components/context/promptContext";
 import { useRouter } from "next/navigation";
-import { courseSchema } from "@/lib/prompt";
+import { courseSchema } from "@/app/api/course/courseGeneratePrompt";
 
 type apiCourseResponseType = {
   message: "success";

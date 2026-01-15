@@ -1,11 +1,6 @@
 import axios from "axios";
-import { Course_config_prompt, courseJSONSchema, courseSchema } from "./prompt";
-
-const POLLINATIONS_TOKEN = process.env.POLLINATIONS_TOKEN;
-
-if (!POLLINATIONS_TOKEN) {
-  throw new Error("POLLINATIONS_TOKEN is not defined");
-}
+import { Course_config_prompt, courseJSONSchema } from "./courseGeneratePrompt";
+import { pollinationsToken } from "@/lib/polai";
 
 export async function aiCourseGenerate(userInput: string) {
   const res = await axios.post(
@@ -32,7 +27,7 @@ export async function aiCourseGenerate(userInput: string) {
     },
     {
       headers: {
-        Authorization: `Bearer ${POLLINATIONS_TOKEN}`,
+        Authorization: `Bearer ${pollinationsToken}`,
         "Content-Type": "application/json",
       },
     }

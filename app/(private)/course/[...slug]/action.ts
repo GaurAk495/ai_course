@@ -8,7 +8,11 @@ export const getCourse = async (courseId: string) => {
         id: courseId,
       },
       include: {
-        chapters: true,
+        chapters: {
+          include: {
+            chapterSlides: true,
+          },
+        },
       },
       omit: {
         userId: true,
@@ -16,7 +20,7 @@ export const getCourse = async (courseId: string) => {
       },
     });
     if (!course) {
-      throw new Error("Course not found");
+      throw new Error(`Course not found with id: ${courseId}`);
     }
     return { course: course, error: null };
   } catch (error) {
