@@ -38,6 +38,7 @@ export function InputGroupCustom() {
       openSignIn();
       return;
     }
+    router.push("/create");
     const toastId = toast.loading("Generating course...");
     try {
       setLoading(true);

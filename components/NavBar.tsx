@@ -16,8 +16,8 @@ import { Menu, X } from "lucide-react";
 
 const menuItems = [
   { label: "Home", href: "/" },
+  { label: "Your Courses", href: "/create" },
   { label: "Pricing", href: "/pricing" },
-  { label: "About", href: "/about" },
 ];
 
 export default function NavBar() {
@@ -100,7 +100,9 @@ function MenuItems({ closeMobileMenu }: { closeMobileMenu: () => void }) {
         <Link
           key={item.label}
           href={item.href}
-          className={pathname === item.href ? "font-bold text-primary" : ""}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xs hover:bg-foreground/3 ${
+            pathname === item.href ? "font-bold text-primary" : ""
+          }`}
           onClick={closeMobileMenu}
         >
           <span>{item.label}</span>
