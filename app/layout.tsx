@@ -27,10 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${dmMono.variable} antialiased`}>
-        <Provider>
-          <NavBar />
-          <div className="pt-13 flex flex-col min-h-screen">{children}</div>
-        </Provider>
+        <div className="relative min-h-screen flex flex-col">
+          <Provider>
+            <NavBar />
+            <div className="pt-13">{children}</div>
+          </Provider>
+        </div>
       </body>
     </html>
   );

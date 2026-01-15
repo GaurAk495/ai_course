@@ -16,53 +16,51 @@ import { Menu, X } from "lucide-react";
 
 const menuItems = [
   { label: "Home", href: "/" },
-  { label: "Chats", href: "/chats" },
-  { label: "Settings", href: "/settings" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "About", href: "/about" },
 ];
 
 export default function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
   return (
-    <>
-      <div className="fixed left-0 right-0 z-10 bg-accent/50 backdrop-blur-sm">
-        <div className="border border-foreground/10">
-          <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-2">
-            <div className="inline-flex items-center space-x-2">
-              {!isMobileMenuOpen ? (
-                <button
-                  className="md:hidden"
-                  onClick={() => setIsMobileMenuOpen(true)}
-                >
-                  <Menu />
-                </button>
-              ) : (
-                <button className="md:hidden" onClick={closeMobileMenu}>
-                  <X />
-                </button>
-              )}
-              <Link href="/" className="flex items-center space-x-2">
-                <Image src="/logo.png" alt="Logo" width={32} height={32} />
-                <span className="text-lg font-bold">AI Course</span>
-              </Link>
-            </div>
-            <div className="hidden md:flex space-x-2">
-              <MenuItems closeMobileMenu={closeMobileMenu} />
-            </div>
-            <div className="space-x-2 flex items-center ">
-              <ModeToggle />
-              <AuthMenu />
-            </div>
+    <div className="fixed top-0 w-full z-1 bg-accent/50 backdrop-blur-sm">
+      <div className="border border-foreground/10">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-2">
+          <div className="inline-flex items-center space-x-2">
+            {!isMobileMenuOpen ? (
+              <button
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu />
+              </button>
+            ) : (
+              <button className="md:hidden" onClick={closeMobileMenu}>
+                <X />
+              </button>
+            )}
+            <Link href="/" className="flex items-center space-x-2">
+              <Image src="/logo.png" alt="Logo" width={32} height={32} />
+              <span className="text-lg font-bold">AI Course</span>
+            </Link>
           </div>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="md:hidden flex flex-col gap-2 p-4">
+          <div className="hidden md:flex space-x-2">
             <MenuItems closeMobileMenu={closeMobileMenu} />
           </div>
-        )}
+          <div className="space-x-2 flex items-center ">
+            <ModeToggle />
+            <AuthMenu />
+          </div>
+        </div>
       </div>
-    </>
+
+      {isMobileMenuOpen && (
+        <div className="md:hidden flex flex-col gap-2 p-4">
+          <MenuItems closeMobileMenu={closeMobileMenu} />
+        </div>
+      )}
+    </div>
   );
 }
 

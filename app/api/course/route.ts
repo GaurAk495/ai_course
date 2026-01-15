@@ -14,11 +14,28 @@ type courseBody = {
 export async function POST(req: NextRequest) {
   try {
     /* ---------------- Auth ---------------- */
-    const { userId } = await auth();
+    const { userId, has } = await auth();
     if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const hasPremiumAccess = has({ plan: "pro" });
+    if (!hasPremiumAccess) {
+      const courses = await prisma.course.findMany({
+        where: {
+          userId,
+        },
+      });
+      if (courses.length >= 2) {
+        return NextResponse.json(
+          {
+            message:
+              "You have reached the limit of 2 courses. Upgrade to Pro to create more courses",
+          },
+          { status: 403 }
+        );
+      }
+    }
     /* ---------------- Body ---------------- */
     const body = (await req.json()) as courseBody;
     const userInput = body.userInput?.trim();
