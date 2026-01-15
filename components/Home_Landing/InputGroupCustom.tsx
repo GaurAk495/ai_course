@@ -18,7 +18,7 @@ import { Loader2, Send } from "lucide-react";
 import axios from "axios";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { usePrompt } from "../../components/context/promptContext";
+import { usePrompt } from "@/components/context/promptContext";
 import { useRouter } from "next/navigation";
 import { courseSchema } from "@/app/api/course/courseGeneratePrompt";
 
