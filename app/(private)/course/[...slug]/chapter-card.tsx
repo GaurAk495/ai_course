@@ -1,6 +1,6 @@
 "use client";
 import { useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { Player } from "@remotion/player";
@@ -26,8 +26,11 @@ export function ChapterCard({
 }: ChapterProps) {
   const { slug } = useParams();
   const router = useRouter();
-  const [courseId, courseSlug] = (slug as string[]) || [];
-
+  const slugArray = Array.isArray(slug) ? slug : [];
+  const [courseId, courseSlug] = slugArray;
+  if (!courseId || !courseSlug) {
+    return notFound();
+  }
   const slidesDuration = useMemo(() => {
     return chapter.chapterSlides.reduce((acc, slide) => {
       acc[slide.id] = slide.audioLengthInSeconds;

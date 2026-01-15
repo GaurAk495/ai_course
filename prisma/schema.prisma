@@ -80,7 +80,7 @@ model ChapterSlides {
 
   //relations
   chapterId String
-  chapter   Chapter @relation(fields: [chapterId], references: [id])
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
