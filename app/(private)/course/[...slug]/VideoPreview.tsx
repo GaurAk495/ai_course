@@ -162,7 +162,7 @@ export const CourseComposition = ({ slides, durationsBySlideId }: Props) => {
     <AbsoluteFill>
       {timeline.map(({ slide, from, dur }) => {
         return (
-          <Sequence key={from} from={from} durationInFrames={dur}>
+          <Sequence key={slide.id} from={from} durationInFrames={dur}>
             <SlideIFrameWithReveal slide={slide} />
           </Sequence>
         );
