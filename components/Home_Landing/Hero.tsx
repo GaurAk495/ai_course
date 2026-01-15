@@ -67,14 +67,17 @@ function CourseCard({
 }) {
   return (
     <div className="dark:bg-white/10 bg-black/10 backdrop-blur-sm p-4 rounded-sm">
-      <div className="relative w-full aspect-video mb-2">
-        <Image
-          src={Data.find((item) => item.id === course.id)?.thumbUrl || ""}
-          alt={course.courseName}
-          fill
-          className="object-cover rounded-[10px]"
-        />
-      </div>
+      {/* only show image on landing page */}
+      {path === "/" && (
+        <div className="relative w-full aspect-video mb-2">
+          <Image
+            src={Data.find((item) => item.id === course.id)?.thumbUrl || ""}
+            alt={course.courseName}
+            fill
+            className="object-cover rounded-[10px]"
+          />
+        </div>
+      )}
       <h3 className="text-semibold text-lg mb-2 line-clamp-1">
         {course.courseName}
       </h3>

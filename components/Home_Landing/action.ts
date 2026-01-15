@@ -11,7 +11,7 @@ export const getGeneratedCourses = async () => {
       userId,
     },
   });
-  console.log(courses);
+
   return courses;
 };
 
