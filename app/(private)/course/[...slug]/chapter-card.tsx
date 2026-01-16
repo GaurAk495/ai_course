@@ -63,7 +63,6 @@ export function ChapterCard({
     slidesDuration,
     30
   );
-
   return (
     <div className="flex flex-col-reverse justify-start gap-4 md:flex-row md:justify-between md:items-center border border-foreground/25 p-4 rounded-sm ">
       <div className="flex items-start gap-4">
@@ -110,6 +109,16 @@ export function ChapterCard({
               className="border px-6 text-sm py-2 rounded-sm"
             >
               Play Video
+            </Button>
+          )}
+          {chapter.status === "Error" && !isGeneratingChapter && (
+            <Button
+              variant="outline"
+              onClick={generateSlide}
+              disabled={isGeneratingChapter}
+              className="border px-6 text-sm py-2 rounded-sm"
+            >
+              Retry Generate
             </Button>
           )}
         </div>

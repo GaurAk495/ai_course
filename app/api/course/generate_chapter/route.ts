@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     await prisma.chapter.update({
       where: {
         id: chapterId,
-        status: "Pending",
+        OR: [{ status: "Pending" }, { status: "Error" }],
       },
       data: { status: "InProgress" },
     });
